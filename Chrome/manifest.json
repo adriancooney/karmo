@@ -13,11 +13,12 @@
 			],
 
 			"js": [
+				"lib/mustache.js",
 				"karmo.js"
 			],
 
 			"css": [
-				"karmo.css"
+				"lib/karmo.css"
 			]
 		}
 	],
@@ -28,10 +29,17 @@
 	"permissions": [
 	    "cookies",
 		"tabs",
-		"history",
+		"storage",
 		"http://reddit.com/*",
 		"https://reddit.com/*",
 		"http://*.reddit.com/*",
 		"https://*.reddit.com/*"
-	]
+	],
+
+	"web_accessible_resources": [
+		"templates/small-bet-view.template",
+		"templates/large-bet-view.template",
+		"templates/main-bet-view.template",
+		"templates/dashboard.template"
+	 ]
 }

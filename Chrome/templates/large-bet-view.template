@@ -1,0 +1,25 @@
+<div class="karmo-large-bet-view">
+	<section class="betting">
+		<h1>Place a bet</h1>
+		<figure class="odds-view">
+			<h3 class="odds">10/1</h3>
+			<h5>HOT!</h5>
+		</figure><figure class="edit-bet">
+			<div>
+				<h3>Bet <input type="number" class="bet-int" value="0"/> on this post.</h3>
+				<h4><input type="range" class="bet-slider" /></h4>
+			</div>
+			<h5 class="karma">Your Karma now is <span>1800</span>, if you lose it's <span>1600 <em>(-200)</em></span></h3>
+			<h5 class="karmo">Your Karmo now is <span>12000</span>, if you win it's <span>18000 <em>(+6000)</em></span></h3>
+			<button class="cancel-bet">Cancel</button><button class="place-bet">Place bet</button>
+		</figure>
+	</section><section class="bet-stats">
+		<h1>Statistics</h1>
+		<ul>
+			<li><span>10<span> other users placed a bet on this.</li>
+			<li><span>120000</span> is the highest bet from <span>renegademaniac</span>.</li>
+			<li><span>4</span> bets have already been won.</li>
+			<li><span>6</span> bets are still pending.</li>
+		</ul>
+	</section>
+</div>

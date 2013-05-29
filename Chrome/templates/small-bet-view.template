@@ -1,0 +1,7 @@
+<div class="karmo-small-bet-view">
+	<h1>{{odds.top}}/<span>{{odds.bottom}}</span></h1>
+	<figure>
+		<h5 class="{{status.class}}">{{status.text}}</h5>
+		<button class="bet">Bet</button>
+	</figure>
+</div>	

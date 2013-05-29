@@ -1,0 +1,122 @@
+.karmo-small-bet-view {
+  opacity: 0.3;
+  float: right;
+}
+.karmo-small-bet-view h1 {
+  margin: 0;
+  padding: 0;
+  font-size: 22px;
+  vertical-align: top;
+  text-align: right;
+  padding-right: 8px;
+  font-weight: bold;
+}
+.karmo-small-bet-view figure {
+  width: 100px;
+  margin: 0;
+  text-align: right;
+}
+.karmo-small-bet-view figure h5 {
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 100;
+  width: 26px;
+  display: inline-block;
+}
+.karmo-small-bet-view figure .hot {
+  color: orange;
+}
+.karmo-small-bet-view figure button {
+  cursor: pointer;
+}
+.karmo-small-bet-view:hover {
+  opacity: 1;
+}
+.karmo-large-bet-view {
+  margin-left: 146px;
+  font-family: Arial;
+  background: #fafafa;
+  border: 1px solid #369;
+  display: inline-block;
+  min-width: 772px;
+  padding: 8px;
+  border-radius: 7px;
+  margin-top: 8px;
+}
+.karmo-large-bet-view h1 {
+  margin: 0 0 12px;
+  padding: 6px;
+  font-size: 16px;
+  border-bottom: 1px solid #ddd;
+}
+.karmo-large-bet-view .betting {
+  display: inline-block;
+  vertical-align: top;
+  width: 52%;
+}
+.karmo-large-bet-view .betting figure {
+  display: inline-block;
+  margin: 0;
+  margin-bottom: 12px;
+  vertical-align: top;
+}
+.karmo-large-bet-view .betting .odds-view {
+  width: 110px;
+  margin-top: 12px;
+}
+.karmo-large-bet-view .betting .odds-view .odds {
+  font-size: 36px;
+  font-weight: bold;
+  text-align: center;
+}
+.karmo-large-bet-view .betting .odds-view h5 {
+  text-align: center;
+  font-size: 16px;
+  color: red;
+}
+.karmo-large-bet-view .betting .edit-bet h3 {
+  font-size: 24px;
+}
+.karmo-large-bet-view .betting .edit-bet h3 input {
+  width: 60px;
+  padding: 4px 8px;
+  display: inline-block;
+  vertical-align: top;
+}
+.karmo-large-bet-view .betting .edit-bet .bet-slider {
+  width: 280px;
+}
+.karmo-large-bet-view .betting .edit-bet h5 {
+  margin: 6px 0;
+  color: #888;
+}
+.karmo-large-bet-view .betting .edit-bet h5 span {
+  color: #000;
+}
+.karmo-large-bet-view .betting .edit-bet .karma em {
+  color: red;
+}
+.karmo-large-bet-view .betting .edit-bet .karmo em {
+  color: green;
+}
+.karmo-large-bet-view .bet-stats {
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 12px;
+  width: 46%;
+}
+.karmo-large-bet-view .bet-stats ul {
+  margin: 0;
+}
+.karmo-large-bet-view .bet-stats ul li {
+  margin: 6px 0;
+  font-size: 15px;
+}
+.karmo-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #f00;
+  border-radius: 8px;
+  cursor: pointer;
+}
