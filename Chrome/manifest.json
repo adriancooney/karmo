@@ -1,0 +1,37 @@
+{
+	"name": "Karmo",
+	"version": "0.1",
+	"manifest_version": 2,
+	"description": "Karmo - Gamble your reddit karma away",
+	"content_scripts": [
+		{
+			"matches": [
+				"http://reddit.com/*",
+				"https://reddit.com/*",
+				"http://*.reddit.com/*",
+				"https://*.reddit.com/*"
+			],
+
+			"js": [
+				"karmo.js"
+			],
+
+			"css": [
+				"karmo.css"
+			]
+		}
+	],
+	"icons": {
+		"48": "icon48.png",
+		"128": "icon128.png" 
+	},
+	"permissions": [
+	    "cookies",
+		"tabs",
+		"history",
+		"http://reddit.com/*",
+		"https://reddit.com/*",
+		"http://*.reddit.com/*",
+		"https://*.reddit.com/*"
+	]
+}
