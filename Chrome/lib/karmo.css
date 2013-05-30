@@ -52,7 +52,7 @@
 .karmo-large-bet-view .betting {
   display: inline-block;
   vertical-align: top;
-  width: 52%;
+  width: 450px;
 }
 .karmo-large-bet-view .betting figure {
   display: inline-block;
@@ -61,7 +61,7 @@
   vertical-align: top;
 }
 .karmo-large-bet-view .betting .odds-view {
-  width: 110px;
+  width: 100px;
   margin-top: 12px;
 }
 .karmo-large-bet-view .betting .odds-view .odds {
@@ -76,15 +76,21 @@
 }
 .karmo-large-bet-view .betting .edit-bet h3 {
   font-size: 24px;
+  line-height: 140%;
 }
 .karmo-large-bet-view .betting .edit-bet h3 input {
   width: 60px;
   padding: 4px 8px;
   display: inline-block;
   vertical-align: top;
+  margin-top: 4px;
+}
+.karmo-large-bet-view .betting .edit-bet h3 select {
+  vertical-align: top;
+  margin-top: 8px;
 }
 .karmo-large-bet-view .betting .edit-bet .bet-slider {
-  width: 280px;
+  width: 320px;
 }
 .karmo-large-bet-view .betting .edit-bet h5 {
   margin: 6px 0;
@@ -103,7 +109,7 @@
   display: inline-block;
   vertical-align: top;
   margin-left: 12px;
-  width: 46%;
+  width: 330px;
 }
 .karmo-large-bet-view .bet-stats ul {
   margin: 0;
@@ -112,6 +118,46 @@
   margin: 6px 0;
   font-size: 15px;
 }
+.karmo-main-bet-view {
+  font-family: Arial;
+}
+.karmo-main-bet-view .bet {
+  border-bottom: 1px solid #ccc;
+  margin: 4px;
+}
+.karmo-main-bet-view .bet .odds {
+  font-size: 36px;
+  font-weight: bold;
+  text-align: center;
+  display: inline-block;
+  margin: 6px;
+}
+.karmo-main-bet-view .bet .info {
+  display: inline-block;
+  vertical-align: top;
+  margin-top: 4px;
+  color: #444;
+  border-left: 1px solid #bbb;
+  padding-left: 12px;
+}
+.karmo-main-bet-view .bet .info h3 {
+  font-size: 24px;
+  font-weight: normal;
+}
+.karmo-main-bet-view .bet .info h3 a {
+  font-weight: bold;
+  text-decoration: underline;
+}
+.karmo-main-bet-view .bet .info h3 span {
+  font-weight: bold;
+}
+.karmo-main-bet-view .bet .info h5 {
+  font-size: 14px;
+  color: #777;
+}
+.karmo-main-bet-view .bet:last-child {
+  border-bottom: none;
+}
 .karmo-dot {
   display: inline-block;
   width: 8px;
@@ -119,4 +165,31 @@
   background: #f00;
   border-radius: 8px;
   cursor: pointer;
+}
+#karmo-notification {
+  position: fixed;
+  z-index: 100;
+  bottom: 0;
+  right: 0;
+  width: 280px;
+  background: #cee3f8;
+  border: 1px solid #5f99cf;
+  border-radius: 6px;
+  margin: 8px;
+  padding: 8px;
+  font-family: Arial;
+  box-shadow: 0 1px 0 #4b8cc9;
+  cursor: pointer;
+  opacity: 0;
+  -webkit-transform: translate(0, 20px);
+  -webkit-transition: all 100ms;
+}
+#karmo-notification h3 {
+  font-weight: bold;
+  margin-bottom: 6px;
+  font-size: 18px;
+}
+#karmo-notification p {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.6);
 }

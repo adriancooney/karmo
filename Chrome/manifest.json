@@ -40,6 +40,8 @@
 		"templates/small-bet-view.template",
 		"templates/large-bet-view.template",
 		"templates/main-bet-view.template",
-		"templates/dashboard.template"
+		"templates/notification.template",
+		"templates/dashboard.template",
+		"assets/audio/chaching.mp3"
 	 ]
 }

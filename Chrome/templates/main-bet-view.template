@@ -1,1 +1,20 @@
-<h1>Main betting view</h1>
+<div class="karmo-main-bet-view">
+	<div class="bet">
+		<div class="odds">
+			<h3>1/32</h3>
+		</div>
+		<div class="info">
+			<h3><span>140000</span> karma on <a href="#">I'm Samuel L Jackson and ..</a> to reach <span>4000</spa> karma.</h3>
+			<h5><span>Pending.</span> <span>14 minutes left.</span> <a href="#" alt="Chicken out of the bet and lose 50 karma instead of the original bet.">Chicken out.</a></h5>
+		</div>
+	</div>
+	<div class="bet">
+		<div class="odds">
+			<h3>1/32</h3>
+		</div>
+		<div class="info">
+			<h3><span>140000</span> karma on <a href="#">I'm Samuel L Jackson and ..</a> to reach <span>4000</spa> karma.</h3>
+			<h5><span>Pending.</span> <span>14 minutes left.</span> <a href="#" alt="Chicken out of the bet and lose 50 karma instead of the original bet.">Chicken out.</a></h5>
+		</div>
+	</div>
+</div>

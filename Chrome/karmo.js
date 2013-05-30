@@ -25,7 +25,7 @@ var Karmo = {
 	template: {
 		url: "templates/",
 		extension: ".template",
-		templateNames: ["small-bet-view", "large-bet-view", "main-bet-view", "dashboard"],
+		templateNames: ["small-bet-view", "large-bet-view", "main-bet-view", "notification", "dashboard"],
 		templates: {},
 
 		/**
@@ -57,6 +57,7 @@ var Karmo = {
 		 * @param  {String} tempate  Template name
 		 */
 		render: function(where, position, template, data) {
+
 			var data = Mustache.render(Karmo.template.templates[template], data);
 
 			switch(position) {
@@ -73,6 +74,30 @@ var Karmo = {
 					where.innerHTML = where.innerHTML + data;
 				break;
 			}
+		}
+	},
+
+	/**
+	 * A probably unnecessary part of it but what the heck
+	 */
+	sound:  {
+		sounds: ["chaching"],
+
+		init: function() {
+			Karmo.sound.sounds.forEach(function(sound) {
+				var a = document.createElement("audio");
+				document.body.appendChild(a);
+				a.id = "karmo-sound-" + sound;
+				a.volume = 0; //Weird bug where you have to play the audio first to
+				a.autoplay = true; //To be able to play it later
+				a.src = chrome.runtime.getURL("assets/audio/" + sound + ".mp3");
+			});
+		},
+
+		play: function(sound) {
+			var a = document.getElementById("karmo-sound-" + sound);
+			a.volume = 1;
+			a.play();
 		}
 	},
 
@@ -219,6 +244,7 @@ var Karmo = {
 
 				//Bind to the bet button
 				post.querySelectorAll(".bet")[0].addEventListener("click", function() {
+
 					Karmo.view.betting.displayBetLarge(post, data);
 				});
 			},
@@ -271,7 +297,8 @@ var Karmo = {
 			displayIsUsersPlayers: function(userElem) {
 				Karmo.model.user.isUserAPlayer(userElem.innerText, function(player) {
 					if(player) {
-						var dot = document.createElement("span");
+						var dot = document.createElement("a");
+						dot.setAttribute("alt", "This redditor plays Karmo.");
 						dot.classList.add("karmo-dot");
 						userElem.parentNode.insertBefore(dot, userElem.nextSibling);
 
@@ -345,6 +372,51 @@ var Karmo = {
 
 				Karmo.template.render(modal, "append", template, data);
 			}
+		},
+
+		notification: {
+			won: function() {
+				//For some unexplainable reason, having audio crashed the application!
+				// Karmo.sound.play("chaching"); 
+				Karmo.view.notification.create("Cha-ching!", "You just won 14000 karmo.", 5000, function() {
+					alert();
+				});
+			},
+
+			create: function(title, message, timeout, onclick) {
+				Karmo.template.render(document.body, "prepend", "notification", {
+					title: title,
+					message: message
+				});
+
+				//Ugh seriously hacky event binding
+				//Waiting for next DOM refresh
+				if(onclick) setTimeout(function() {
+					var e = document.getElementById("karmo-notification");
+
+					e.style.opacity = 1;
+					e.style.webkitTransform = "translate(0,0)";
+
+					e.addEventListener("click", function() {
+						remove();
+						onclick();
+					});
+				}, 50);
+
+				setTimeout(remove, timeout);
+
+				function remove() {
+					var a = document.getElementById("karmo-notification");
+
+					if(a) {
+						a.style.opacity = 0;
+						a.style.webkitTransform = "translate(0, -30px)";
+						setTimeout(function() {
+							a.parentNode.removeChild(a);
+						}, 100);
+					}
+				}
+			}
 		}
 	},
 
@@ -367,7 +439,7 @@ var Karmo = {
 			Array.prototype.forEach.call(document.querySelectorAll(".author"), function(username) {
 				//Display username information
 				Karmo.view.user.displayIsUsersPlayers(username);
-			})
+			});
 		},
 
 		/**
@@ -400,7 +472,7 @@ var Karmo = {
 			//Add a list to the menu
 			var item = document.createElement("li"), a = document.createElement("a");
 			a.setAttribute("href", "#bets");
-			a.innerText = "bets on /r/" + Karmo.model.current.subreddit;
+			a.innerText = "bets";
 			item.appendChild(a);
 			document.querySelectorAll(".tabmenu")[0].appendChild(item);
 
@@ -444,7 +516,11 @@ var Karmo = {
 
 				//Call the route in the context of Karmo with the match object
 				if(test) Karmo.routes[regex].call(Karmo, test);
+
 			}
+
+			//Initilize the sounds
+			//Karmo.sound.init();
 		});
 	}
 };
