@@ -125,6 +125,15 @@
   border-bottom: 1px solid #ccc;
   margin: 4px;
 }
+.karmo-main-bet-view .bet .Won {
+  color: green;
+}
+.karmo-main-bet-view .bet .Lost {
+  color: red;
+}
+.karmo-main-bet-view .bet .Pending {
+  color: orange;
+}
 .karmo-main-bet-view .bet .odds {
   font-size: 36px;
   font-weight: bold;
@@ -157,6 +166,32 @@
 }
 .karmo-main-bet-view .bet:last-child {
   border-bottom: none;
+}
+#karmo-loading {
+  text-align: center;
+  font-size: 18px;
+  color: rgba(0, 0, 0, 0.4);
+  margin-top: 140px;
+  display: none;
+}
+#karmo-loading.active {
+  display: block;
+}
+.karmo-list-options p {
+  font-size: 16px;
+  color: #444;
+  font-family: Arial;
+  border-bottom: 1px dotted rgba(0, 0, 0, 0.3);
+  padding: 6px;
+  margin: 6px;
+}
+.karmo-list-options p a {
+  font-weight: bold;
+  text-decoration: underline;
+}
+.karmo-list-options p .highlighted {
+  text-decoration: none;
+  font-weight: normal;
 }
 .karmo-dot {
   display: inline-block;

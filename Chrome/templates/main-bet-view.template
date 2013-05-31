@@ -1,20 +1,8 @@
+<div class="karmo-list-options">
+	<p>Your bets: 
+		<a href="#" id="you-all" class="highlighted">All</a>/<a href="#" id="you-won">Won</a>/<a href="#" id="you-lost">Lost</a>/<a href="#" id="you-pending">Pending</a>. Everyone's bets: <a href="#" id="you-latest">Latest</a>/<a href="#" id="everyone-latest-winning">Winning</a>/<a href="#" id="EveryonesLatestLosing">Latest Losing</a>/<a href="#" id="Top-WinningBets">Top winning</a>/<a href="#" id="toplosing">Top losing</a>.
+	</p>
+</div>
+<div id="karmo-loading" class="active">Loading..</div>
 <div class="karmo-main-bet-view">
-	<div class="bet">
-		<div class="odds">
-			<h3>1/32</h3>
-		</div>
-		<div class="info">
-			<h3><span>140000</span> karma on <a href="#">I'm Samuel L Jackson and ..</a> to reach <span>4000</spa> karma.</h3>
-			<h5><span>Pending.</span> <span>14 minutes left.</span> <a href="#" alt="Chicken out of the bet and lose 50 karma instead of the original bet.">Chicken out.</a></h5>
-		</div>
-	</div>
-	<div class="bet">
-		<div class="odds">
-			<h3>1/32</h3>
-		</div>
-		<div class="info">
-			<h3><span>140000</span> karma on <a href="#">I'm Samuel L Jackson and ..</a> to reach <span>4000</spa> karma.</h3>
-			<h5><span>Pending.</span> <span>14 minutes left.</span> <a href="#" alt="Chicken out of the bet and lose 50 karma instead of the original bet.">Chicken out.</a></h5>
-		</div>
-	</div>
 </div>

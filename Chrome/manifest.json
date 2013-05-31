@@ -14,6 +14,7 @@
 
 			"js": [
 				"lib/mustache.js",
+				"lib/moment.js",
 				"karmo.js"
 			],
 
@@ -30,16 +31,19 @@
 	    "cookies",
 		"tabs",
 		"storage",
+		"notifications",
 		"http://reddit.com/*",
 		"https://reddit.com/*",
 		"http://*.reddit.com/*",
-		"https://*.reddit.com/*"
+		"https://*.reddit.com/*",
+		"http://localhost:8181/"
 	],
 
 	"web_accessible_resources": [
 		"templates/small-bet-view.template",
 		"templates/large-bet-view.template",
 		"templates/main-bet-view.template",
+		"templates/bet-list.template",
 		"templates/notification.template",
 		"templates/dashboard.template",
 		"assets/audio/chaching.mp3"

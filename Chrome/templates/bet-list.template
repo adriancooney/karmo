@@ -1,0 +1,15 @@
+{{#bets}}
+	<div class="bet">
+		<div class="odds">
+			<h3 class="{{status}}">{{odds}}</h3>
+		</div>
+		<div class="info">
+			<h3><span>{{karma}}</span> karma on <a href="#">I'm Samuel L Jackson and ..</a> to reach <span>{{prediction}}</spa> {{betType}}.</h3>
+			<h5><span class="{{status}}">{{status}}.</span> <span>Ending {{deadlinePretty}}.</span> <a href="#" alt="Chicken out of the bet and lose 50 karma instead of the original bet.">Chicken out.</a></h5>
+		</div>
+	</div>
+{{/bets}}
+
+{{#bets_empty}}
+	<h3 class="list-empty">There doesn't seem to be anything here!</h3>
+{{/bets_empty}}

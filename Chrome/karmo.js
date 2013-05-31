@@ -10,6 +10,7 @@ var Karmo = {
 	 * Runtime variables
 	 */
 	DEBUG: true,
+	URL: "http://localhost:8181",
 
 	/**
 	 * Helper functions
@@ -25,7 +26,7 @@ var Karmo = {
 	template: {
 		url: "templates/",
 		extension: ".template",
-		templateNames: ["small-bet-view", "large-bet-view", "main-bet-view", "notification", "dashboard"],
+		templateNames: ["small-bet-view", "large-bet-view", "main-bet-view", "bet-list", "notification", "dashboard"],
 		templates: {},
 
 		/**
@@ -118,6 +119,9 @@ var Karmo = {
 					case "json":
 						return JSON.parse(val);
 					break;
+
+					default:
+						return val;
 				}
 			} else return val;
 		},
@@ -134,43 +138,52 @@ var Karmo = {
 		 * Karmo AJAX - Why is there no tiny ajax library out there?
 		 * @return {[type]} [description]
 		 */
-		ajax: function(options, callback, error) {
+		ajax: function(options, callback, error, cacheOverride) {
 			//Throw a couple of errors if the correct data isn't recieved
 			if(!options.url) Karmo.error("Karmo.model.ajax: Please provide a url in the options object.");
 			if(!callback) Karmo.error("Karmo.model.ajax: Please provide a callback as a second parameter.");
 
-			var defaults = {
-				method: "get",
-				responseType: "json"
-			};
+			//Query cached?
+			var cacheData = Karmo.storage.get(options.url);
 
-			//Merge the defaults and options
-			for(var key in defaults) if(!options[key]) options[key] = defaults[key];
+			if(!cacheOverride && cacheData && !Karmo.DEBUG) { Karmo.log("Loading from cache: ", options.url); callback(cacheData, this); }
+			else {
+				var defaults = {
+					method: "get",
+					responseType: "json"
+				};
 
-			var xhr = new XMLHttpRequest();
-			xhr.open(options.method.toUpperCase(), options.url, true);
+				//Merge the defaults and options
+				for(var key in defaults) if(!options[key]) options[key] = defaults[key];
 
-			xhr.onreadystatechange = function() {
-				if (this.readyState == 4) {
-					if(this.status == 200) {
-						data = this.response;
+				var xhr = new XMLHttpRequest();
+				xhr.open(options.method.toUpperCase(), options.url, true);
 
-						switch(options.responseType) {
-							case "json":
-								data = JSON.parse(data);
-							break;
-						}
+				xhr.onreadystatechange = function() {
+					if (this.readyState == 4) {
+						if(this.status == 200) {
+							data = this.response;
 
-						callback(data, this);
-					} else if(error) error(this);
-				}
-			};
+							switch(options.responseType) {
+								case "json":
+									data = JSON.parse(data);
+								break;
+							}
 
-			xhr.send();
+							//Save to cache
+							Karmo.storage.save(options.url, data);
+
+							callback(data, this);
+						} else if(error) error(this);
+					}
+				};
+
+				xhr.send();
+			}
 		},
 
 		betting: {
-			getBettingDataOnPost: function(post_id) {
+			getBettingDataOnPost: function(post_id, callback) {
 				return {
 					bets: 15,
 					odds: { top: 1, bottom: 10 },
@@ -178,12 +191,32 @@ var Karmo = {
 				}
 			},
 
-			getMetaDataOnBet: function(bet_id) {
-				return {
-					author: "renegademaniac",
-					karma_riding: 500,
-					odds: { top: 1, bottom: 10 },
-					placed_at: Date.now
+			/**
+			 * Get your bets
+			 * @param  {string}   listing  The listing type. Current supported is: all, won, lost, pending
+			 * @param {int} page The page to return. 15 items per page.
+			 * @param  {Function} callback 
+			 */
+			yourBets: function(listing, callback) {
+				var username = Karmo.model.current.username; //That's a mouthful
+				var _callback =  function(data) {
+					callback(data.data.bets);
+				};
+
+				switch(listing) {
+					case "all":
+						Karmo.model.ajax({
+							url: Karmo.URL + "/bets/user/" + username,
+							responseType: "json"
+						}, _callback);
+					break;
+
+					case "won": case "lost": case "pending":
+						Karmo.model.ajax({
+							url: Karmo.URL + "/bets/user/" + username + "/" + listing,
+							responseType: "json"
+						}, _callback);
+					break;
 				}
 			},
 
@@ -197,6 +230,47 @@ var Karmo = {
 			 * @returns {array} Odds in the form of [(int) top, (bottom) bottom]
 			 */
 			calculateOddsOnPost: function(karma, created, comments) {
+
+			},
+
+			/**
+			 * To save bandwidth on the server. We check when bets
+			 * should be updated on the client and then tell the server
+			 * when to update them. This function checks all bets.
+			 *
+			 * This system works surprising well with the caching.
+			 */
+			checkBets: function() {
+				//Load bets from the server or cache
+				//Whichever
+				
+				Karmo.model.betting.yourBets("pending", function(bets) {
+					bets.forEach(function(bet) {
+						var now = new Date(),
+							betDate = Date.parse(bet.deadline);
+
+						if((betDate - now) <= 0) {
+							Karmo.model.betting.updateBet(bet.id);
+						}
+					});
+				});
+			},
+
+			/**
+			 * Tell the server to update a bet
+			 * @param  {int}   id       The bet Id
+			 * @param  {Function} callback 
+			 */
+			updateBet: function(id, callback) {
+				Karmo.model.ajax({
+					url: Karmo.URL + "/bet/" + id + "/update",
+					responseType: "json"
+				}, function(data) {
+					
+				});
+			},
+
+			create: function() {
 
 			}
 		},
@@ -228,6 +302,10 @@ var Karmo = {
 		current: {
 			subreddit: (function() {
 				return document.querySelectorAll(".pagename")[0].innerText;
+			})(),
+
+			username: (function() {
+				return document.querySelectorAll(".user a")[0].innerText;
 			})()
 		}
 	},
@@ -322,6 +400,82 @@ var Karmo = {
 				var content = document.querySelectorAll("div.content")[0];
 
 				Karmo.template.render(content, "replace", "main-bet-view");
+
+				//Default view
+				Karmo.view.bets.loadBetList("you", "all");
+
+				//wait for dom reload
+				setTimeout(function() {
+					var as = document.querySelectorAll(".karmo-list-options a");
+
+					Array.prototype.forEach.call(as, function(a) {
+						a.addEventListener("click", function() {
+
+							var split = this.id.split("-"),
+								who = split[0],
+								listing = split[1];
+
+							Karmo.view.bets.loadBetList(who, listing);
+
+							//Make it highlighed
+							this.parentNode.querySelectorAll(".highlighted")[0].classList.remove("highlighted");
+							this.classList.add("highlighted");
+						});
+					});
+				}, 50);
+			},
+
+			list: function(bets) {
+				var wrapper = document.querySelectorAll(".karmo-main-bet-view")[0];
+
+				Karmo.log("Listing bets", wrapper);
+
+				Karmo.template.render(wrapper, "replace", "bet-list", {
+					bets: bets,
+					bets_empty: function() {
+						if(!bets.length > 0) return true;
+					},
+
+					deadlinePretty: function() {
+						return moment(this.deadline).fromNow();
+					},
+
+					status: function() {
+						if(!this.active && this.won) return "Won";
+						else if(!this.active && !this.won) return "Lost";
+						else return "Pending";
+					},
+
+					betType: function() {
+						if(this.type == "karma") return "Karma";
+						else if(this.type == "comment-count") return "Comment Count";
+					}
+				});
+			},
+
+			loading: function(bool) {
+				var elem = document.getElementById("karmo-loading");
+
+				Karmo.log("Hiding loading..", bool);
+
+				if(elem) {
+					if(bool) elem.classList.add("active");
+					else elem.classList.remove("active");
+				}
+			},
+
+			loadBetList: function(who, listing) {
+				Karmo.view.bets.loading(true);
+
+				function callback(bets) {
+					console.log("Called!", arguments.callee)
+					Karmo.view.bets.loading(false);
+					Karmo.view.bets.list(bets);
+				}
+
+				if(who == "you") Karmo.model.betting.yourBets(listing, callback);
+				else if(who == "everyone") Karmo.model.betting.everyonesBets(listing, callback);
+
 			}
 		},
 
@@ -379,7 +533,7 @@ var Karmo = {
 				//For some unexplainable reason, having audio crashed the application!
 				// Karmo.sound.play("chaching"); 
 				Karmo.view.notification.create("Cha-ching!", "You just won 14000 karmo.", 5000, function() {
-					alert();
+					//alert();
 				});
 			},
 
@@ -430,16 +584,28 @@ var Karmo = {
 		/**
 		 * /* - Catch all route
 		 */
-		".": function() {
+		".*": function() {
 			Karmo.model.user.getUser(function(user) {
 				//Always display the small karmo
 				Karmo.view.user.displayKarmoSmall(user);
 			});
 
+			//Update bets in bet loop
+			//Yeah, I'm calling it a bet loop
+			//(the loop to check if bets should be updated)
+			(function betLoop() {
+				Karmo.model.betting.checkBets();
+
+				setTimeout(betLoop, 1000 * 5); //update every ten seconds
+			})();
+
+			/*
+				This would waste FAR too much bandwidth on the server so it's a no-no
+
 			Array.prototype.forEach.call(document.querySelectorAll(".author"), function(username) {
 				//Display username information
 				Karmo.view.user.displayIsUsersPlayers(username);
-			});
+			}); */
 		},
 
 		/**
