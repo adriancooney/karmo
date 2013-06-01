@@ -53,6 +53,7 @@ app.api.encode = function(res, status, obj) {
 };
 
 app.api.queryDatabase = function(res, query, params, callback) {
+	console.log(query, params);
 	connection.query(query, params, function(err, rows, fields) {
 		//Query executed!
 		if(err) app.api.error(res, "database", err);
@@ -60,6 +61,53 @@ app.api.queryDatabase = function(res, query, params, callback) {
 			callback(rows, fields);
 		}
 	});
+};
+
+app.api.getBets = function(res, options, callback) {
+	options = options || {};
+	var defaults = {
+		fields: "*",
+		direction: "DESC",
+		itemsPerPage: 15
+	};
+
+	//Merge objects
+	for(var key in defaults) if(!options[key]) options[key] = defaults[key];
+
+	var action = "SELECT",
+		fields = (options.fields instanceof Array) ? options.fields.join(", ") : options.fields,
+		table = "FROM bets",
+		where = (function(obj) {
+			if(obj) {
+				var where = "WHERE ", vals = [];
+				for(var field in obj) where += field + " = ? AND ", vals.push(obj[field]);
+
+				//Shave off the last AND
+				where = where.substr(0, where.length - 5);
+
+				return { string: where, values: vals };
+			} else return { string: "", values: [] };
+		})(options.where),
+		orderBy = (options.orderBy) ? "ORDER BY " + options.orderBy : "",
+		direction = (orderBy) ? options.direction : "";
+
+	//If a page is supplied
+	if(options.page) {
+		var upper = (options.page - 1) * options.itemsPerPage,
+			lower = upper + options.itemsPerPage,
+			limit = "LIMIT " + upper + ", " + lower;
+	} else if(options.limits) {
+		var limit = "LIMIT " + options.limits[0] + ", " + options.limits[1];
+	} else {
+		var limit = "";
+	}
+
+	var query = [action, fields, table, where.string, orderBy, direction, limit].filter(function(val) { if(val.length > 0) return true; else return false; }),
+		queryString = query.join(" ");
+
+	//Robust query builder done
+	//now to query
+	app.api.queryDatabase(res, queryString, where.values, callback);
 };
 
 app.api.queryReddit = function(path, callback) {
@@ -140,142 +188,235 @@ app.post("/bet", function(req, res) {
 	});
 });
 
-/**
- * Get data on a specific bet
- * 	:id - Bet Id
- */
-app.get("/bet/:id", function(req, res) {
-	app.api.queryDatabase(res, "SELECT * FROM bets WHERE id = ?", [req.params.id], function(rows, fields) {
-		if(!rows[0]) app.api.error(res, 404, "Bet not found.");
-		else {
-			app.api.send(res, {
-				bet: rows[0]
-			});
-		}
-	});
-});
+// /**
+//  * Get data on a specific bet
+//  * 	:id - Bet Id
+//  */
+// app.get("/bet/:id", function(req, res) {
+// 	app.api.queryDatabase(res, "SELECT * FROM bets WHERE id = ?", [req.params.id], function(rows, fields) {
+// 		if(!rows[0]) app.api.error(res, 404, "Bet not found.");
+// 		else {
+// 			app.api.send(res, {
+// 				bet: rows[0]
+// 			});
+// 		}
+// 	});
+// });
 
-/**
- * Update a bet's status
- * 	:id - Bet Id
- *
- * 	This is where the pending check is done a notification if a user won.
- * 	All time keeping is done on client side instead of constant polling 
- * 	or sockets. However we still double check to keep them nasties in 
- * 	their place.
- */
-app.get("/bet/:id/update", function(req, res) {
-	app.api.queryDatabase(res, "SELECT * FROM bets WHERE id = ?", [req.params.id], function(rows, fields) {
-		if(!rows[0]) app.api.error(res, 404, "Bet not found.");
-		else {
+// /**
+//  * Update a bet's status
+//  * 	:id - Bet Id
+//  *
+//  * 	This is where the pending check is done a notification if a user won.
+//  * 	All time keeping is done on client side instead of constant polling 
+//  * 	or sockets. However we still double check to keep them nasties in 
+//  * 	their place.
+//  *
+//  * 	We will run a cron job every five minutes to update the bets just in case they're offline.
+//  */
+// app.get("/bet/:id/update", function(req, res) {
+// 	app.api.queryDatabase(res, "SELECT * FROM bets WHERE id = ?", [req.params.id], function(rows, fields) {
+// 		if(!rows[0]) app.api.error(res, 404, "Bet not found.");
+// 		else {
 
-			//Check if the two bets are at the same deadline
-			var bet = rows[0],
-				now = new Date(),
-				deadline = Date.parse(bet.deadline);
+// 			//Check if the two bets are at the same deadline
+// 			var bet = rows[0],
+// 				now = new Date(),
+// 				deadline = Date.parse(bet.deadline);
 
-			if((deadline - now) <= 0) {
-				// They were correct, no messers
-				// Update the bet, see if they won
-				// TODO: Check if the bet actually won
-				app.api.queryDatabase(res, "UPDATE bets SET active = 0, won = 1 WHERE id = ?", [req.params.id], function() {
-					app.api.send(res, {
-						success: true,
-						win: true
-					});
-				});
-			} else {
-				res.api.error(res, 418, "Don't be cheeky. Wait your turn.");
-			}
-		}
-	});
-});
+// 			if((deadline - now) <= 0) {
+// 				// They were correct, no messers
+// 				// Update the bet, see if they won
+// 				// TODO: Check if the bet actually won
+// 				app.api.queryDatabase(res, "UPDATE bets SET active = 0, won = 1 WHERE id = ?", [req.params.id], function() {
+// 					app.api.send(res, {
+// 						success: true,
+// 						win: true
+// 					});
+// 				});
+// 			} else {
+// 				res.api.error(res, 418, "Don't be cheeky. Wait your turn.");
+// 			}
+// 		}
+// 	});
+// });
 
 
-/**
- * Get latest bets
- * 	:page - The page of bets to recieve
- */
-app.get("/bets/latest", function(req, res) {
-	var page = parseInt(req.params.page) || 1,
-		itemsperpage = 15,
-		uplimit = (page - 1) * itemsperpage,
-		lowlimit = uplimit + itemsperpage;
+// /**
+//  * Get latest bets
+//  * 	:page - The page of bets to recieve
+//  */
+// app.get("/bets/latest", function(req, res) {
+// 	var page = parseInt(req.params.page) || 1,
+// 		itemsperpage = 15,
+// 		uplimit = (page - 1) * itemsperpage,
+// 		lowlimit = uplimit + itemsperpage;
 
-	app.api.queryDatabase(res, "SELECT * FROM bets ORDER BY created_at DESC LIMIT ?, ?", [uplimit, lowlimit], function(rows, fields) {
-		app.api.send(res, {bets:rows});
-	});
-});
+// 	app.api.queryDatabase(res, "SELECT * FROM bets ORDER BY created_at DESC LIMIT ?, ?", [uplimit, lowlimit], function(rows, fields) {
+// 		app.api.send(res, {bets:rows});
+// 	});
+// });
 
-/**
- * Get latest winning bets
- * 	:page - The page of bets to recieve
- */
-app.get("/bets/won", function(req, res) {
-	var page = parseInt(req.params.page) || 1,
-		itemsperpage = 15,
-		uplimit = (page - 1) * itemsperpage,
-		lowlimit = uplimit + itemsperpage;
+// /**
+//  * Get latest winning bets
+//  * 	:page - The page of bets to recieve
+//  */
+// app.get("/bets/won", function(req, res) {
+// 	var page = parseInt(req.params.page) || 1,
+// 		itemsperpage = 15,
+// 		uplimit = (page - 1) * itemsperpage,
+// 		lowlimit = uplimit + itemsperpage;
 
-	app.api.queryDatabase(res, "SELECT * FROM bets ORDER BY created_at WHERE won = 1 AND active = 0 DESC LIMIT ?, ?", [uplimit, lowlimit], function(rows, fields) {
-		app.api.send(res, {bets:rows});
-	});
-});
+// 	app.api.queryDatabase(res, "SELECT * FROM bets WHERE won = 1 AND active = 0 ORDER BY created_at DESC LIMIT ?, ?", [uplimit, lowlimit], function(rows, fields) {
+// 		app.api.send(res, {bets:rows});
+// 	});
+// });
 
-/**
- * Get latest losing bets
- * 	:page - The page of bets to recieve
- */
-app.get("/bets/lost", function(req, res) {
-	var page = parseInt(req.params.page) || 1,
-		itemsperpage = 15,
-		uplimit = (page - 1) * itemsperpage,
-		lowlimit = uplimit + itemsperpage;
+// /**
+//  * Get latest losing bets
+//  * 	:page - The page of bets to recieve
+//  */
+// app.get("/bets/lost", function(req, res) {
+// 	var page = parseInt(req.params.page) || 1,
+// 		itemsperpage = 15,
+// 		uplimit = (page - 1) * itemsperpage,
+// 		lowlimit = uplimit + itemsperpage;
 
-	app.api.queryDatabase(res, "SELECT * FROM bets ORDER BY created_at WHERE won = 0 AND active = 0 DESC LIMIT ?, ?", [uplimit, lowlimit], function(rows, fields) {
-		app.api.send(res, {bets:rows});
-	});
-});
+// 	app.api.queryDatabase(res, "SELECT * FROM bets WHERE won = 0 AND active = 0 ORDER BY created_at DESC LIMIT ?, ?", [uplimit, lowlimit], function(rows, fields) {
+// 		app.api.send(res, {bets:rows});
+// 	});
+// });
 
-/**
- * Get latest losing bets
- * 	:page - The page of bets to recieve
- */
-app.get("/bets/top/won", function(req, res) {
-	var page = parseInt(req.params.page) || 1,
-		itemsperpage = 15,
-		uplimit = (page - 1) * itemsperpage,
-		lowlimit = uplimit + itemsperpage;
+// /**
+//  * Get latest losing bets
+//  * 	:page - The page of bets to recieve
+//  */
+// app.get("/bets/top/won", function(req, res) {
+// 	var page = parseInt(req.params.page) || 1,
+// 		itemsperpage = 15,
+// 		uplimit = (page - 1) * itemsperpage,
+// 		lowlimit = uplimit + itemsperpage;
 
-	app.api.queryDatabase(res, "SELECT * FROM bets ORDER BY karma WHERE won = 1 AND active = 0 DESC LIMIT ?, ?", [uplimit, lowlimit], function(rows, fields) {
-		app.api.send(res, {bets:rows});
-	});
-});
+// 	app.api.queryDatabase(res, "SELECT * FROM bets WHERE won = 1 AND active = 0 ORDER BY karma DESC LIMIT ?, ?", [uplimit, lowlimit], function(rows, fields) {
+// 		app.api.send(res, {bets:rows});
+// 	});
+// });
 
-/**
- * Get latest losing bets
- * 	:page - The page of bets to recieve
- */
-app.get("/bets/top/lost", function(req, res) {
-	var page = parseInt(req.params.page) || 1,
-		itemsperpage = 15,
-		uplimit = (page - 1) * itemsperpage,
-		lowlimit = uplimit + itemsperpage;
+// /**
+//  * Get latest losing bets
+//  * 	:page - The page of bets to recieve
+//  */
+// app.get("/bets/top/lost", function(req, res) {
+// 	var page = parseInt(req.params.page) || 1,
+// 		itemsperpage = 15,
+// 		uplimit = (page - 1) * itemsperpage,
+// 		lowlimit = uplimit + itemsperpage;
 
-	app.api.queryDatabase(res, "SELECT * FROM bets ORDER BY karma WHERE won = 0 AND active = 0 DESC LIMIT ?, ?", [uplimit, lowlimit], function(rows, fields) {
-		app.api.send(res, {bets:rows});
-	});
-});
+// 	app.api.queryDatabase(res, "SELECT * FROM bets WHERE won = 0 AND active = 0 ORDER BY karma DESC LIMIT ?, ?", [uplimit, lowlimit], function(rows, fields) {
+// 		app.api.send(res, {bets:rows});
+// 	});
+// });
 
-/**
- * Get bets on specific post
- * 	:id - Post id
- */
-app.get("/bets/post/:id", function(req, res) {
-	app.api.queryDatabase(res, "SELECT * FROM bets WHERE post_id = ?", [req.params.id], function(rows, fields) {
+// /**
+//  * Get bets on specific post
+//  * 	:id - Post id
+//  */
+// app.get("/bets/post/:id", function(req, res) {
+// 	app.api.queryDatabase(res, "SELECT * FROM bets WHERE post_id = ?", [req.params.id], function(rows, fields) {
+// 		app.api.send(res, {
+// 			post_id: req.params.id,
+// 			bets: rows
+// 		});
+// 	});
+// });
+
+//Expose a general api
+app.get("/bets", function(req, res) {
+	app.api.getBets(res, req.query, function(bets) {
 		app.api.send(res, {
-			post_id: req.params.id,
-			bets: rows
+			bets: bets
+		});
+	});
+});
+
+//Phew, that's a big ass regex
+app.get(/\/bets\/?(?:(?:(?:(user|post)\/([^\/]+))|(\d+))\/?)?(?:(latest(?:\/(win|loss))?)|(top(?:\/(win|loss)))|(pending))?/, function(req, res, next) {
+	var options = {
+		where: {}
+	};
+
+	var route = req.params,
+		filter = "latest",
+		scope = route[0];
+
+	//Betting filter
+	if(route[3]) filter = "latest";
+	if(route[3] && route[4] == "win") filter = "latest/win";
+	if(route[3] && route[4] == "loss") filter = "latest/loss";
+	if(route[7]) filter = "pending";
+	if(route[5] && route[6] == "win") filter = "top/win";
+	if(route[5] && route[6] == "loss") filter = "top/loss";
+
+	console.log(req.params)
+
+	switch(scope) {
+		case "user":
+			options.where.username = route[1];
+		break;
+
+		case "post":
+			options.where.post_id = route[1];
+		break;
+
+		default:
+			next();
+	}
+
+	switch(filter) {
+		case "latest":
+			options.orderBy = "created_at";
+			options.direction = "DESC";
+		break;
+
+		case "latest/win":
+			options.orderBy = "created_at";
+			options.direction = "DESC";
+			options.where.active = 0;
+			options.where.won = 1;
+		break;
+
+		case "latest/loss":
+			options.where.active = 0;
+			options.where.won = 0;
+		break;
+
+		case "pending":
+			options.active = 1;
+			options.orderBy = "created_at";
+			options.direction = "DESC";
+		break;
+
+		case "top/win":
+			options.orderBy = "karma";
+			options.direction = "DESC";
+			options.where.active = 0;
+			options.where.won = 1;
+		break;
+
+		case "top/loss":
+			options.orderBy = "karma";
+			options.direction = "ASC";
+			options.where.active = 0;
+			options.where.won = 0;
+		break;
+
+		default:
+			next(); //404
+	}
+
+	app.api.getBets(res, options, function(bets) {
+		app.api.send(res, {
+			bets: bets
 		});
 	});
 });
